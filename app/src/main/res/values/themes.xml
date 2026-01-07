@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.SmartHealthTracker" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="android:colorPrimary">@color/HealthBlue</item>
+        <item name="android:colorPrimaryDark">@color/HealthGreen</item>
+        <item name="android:colorAccent">@color/HealthPurple</item>
+    </style>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude sensitive health data from backup -->
+    <exclude domain="database" path="health_database" />
+    <exclude domain="sharedpref" path="health_preferences.xml" />
+</full-backup-content>

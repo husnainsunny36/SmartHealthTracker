@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "428367960312",
+    "project_id": "smarthealthtracker-c002d",
+    "storage_bucket": "smarthealthtracker-c002d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:428367960312:android:7de26a53c480080abe830d",
+        "android_client_info": {
+          "package_name": "com.smarthealthtracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT6_hNngRtRNAbfrt5zYcQVwdb7VEIGtM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

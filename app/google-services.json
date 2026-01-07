@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "428367960312",
+    "project_id": "smarthealthtracker-c002d",
+    "storage_bucket": "smarthealthtracker-c002d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:428367960312:android:7de26a53c480080abe830d",
+        "android_client_info": {
+          "package_name": "com.smarthealthtracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "428367960312-nt8ie41pqk778k548ulsmb9becrt3o9o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smarthealthtracker",
+            "certificate_hash": "9c896ea4b8401ae23bf44e69ce3ca44652085437"
+          }
+        },
+        {
+          "client_id": "428367960312-sdgli8dbv7iiioppd3toq7cd34chs1c8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smarthealthtracker",
+            "certificate_hash": "acbb8d58a2f592c37f3b7977a2fc09c431a60763"
+          }
+        },
+        {
+          "client_id": "428367960312-1i0vkq8a29cg3c1i7rg0ici1rnmg46rd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT6_hNngRtRNAbfrt5zYcQVwdb7VEIGtM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "428367960312-1i0vkq8a29cg3c1i7rg0ici1rnmg46rd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
