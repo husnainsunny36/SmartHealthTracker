@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
@@ -26,6 +27,7 @@ class NotificationService @Inject constructor(
         const val WATER_REMINDER_ID = 1001
         const val STEP_REMINDER_ID = 1002
         const val SLEEP_REMINDER_ID = 1003
+        const val TEST_NOTIFICATION_ID = 9999
     }
     
     init {
@@ -135,6 +137,46 @@ class NotificationService @Inject constructor(
     fun cancelAllReminders() {
         // For now, just show a message that reminders are cancelled
         // In a real app, you would cancel all scheduled WorkManager tasks
+    }
+    
+    fun showTestNotification(): Boolean {
+        return try {
+            // Check if notifications are enabled
+            if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+                Log.e("NotificationService", "Notifications are not enabled")
+                return false
+            }
+            
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, TEST_NOTIFICATION_ID, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("🧪 Test Notification")
+                .setContentText("This is a test notification from Smart Health Tracker. Your notifications are working correctly!")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build()
+            
+            with(NotificationManagerCompat.from(context)) {
+                notify(TEST_NOTIFICATION_ID, notification)
+            }
+            
+            Log.d("NotificationService", "Test notification sent successfully")
+            true
+        } catch (e: SecurityException) {
+            Log.e("NotificationService", "SecurityException: Notification permission denied", e)
+            false
+        } catch (e: Exception) {
+            Log.e("NotificationService", "Error showing test notification", e)
+            false
+        }
     }
     
 }

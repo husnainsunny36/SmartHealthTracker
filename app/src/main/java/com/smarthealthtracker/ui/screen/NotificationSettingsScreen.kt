@@ -1,5 +1,12 @@
 package com.smarthealthtracker.ui.screen
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -12,10 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.smarthealthtracker.data.service.NotificationService
 import com.smarthealthtracker.ui.components.HealthBackButtonTopAppBar
 import com.smarthealthtracker.ui.theme.*
+import com.smarthealthtracker.ui.utils.rememberPermissionsManager
+import com.smarthealthtracker.ui.utils.rememberSinglePermissionLauncher
 import com.smarthealthtracker.ui.viewmodel.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,6 +41,84 @@ fun NotificationSettingsScreen(
     var exerciseReminders by remember { mutableStateOf(true) }
     var sleepReminders by remember { mutableStateOf(true) }
     var goalReminders by remember { mutableStateOf(true) }
+    
+    val permissionsManager = rememberPermissionsManager()
+    val notificationPermissionLauncher = rememberSinglePermissionLauncher { isGranted ->
+        if (isGranted) {
+            // Permission granted, try to show notification
+            val success = notificationService.showTestNotification()
+            if (success) {
+                Toast.makeText(context, "Test notification sent!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Failed to send notification. Please check notification settings.", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Toast.makeText(context, "Notification permission is required to send test notifications", Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    fun openNotificationSettings() {
+        try {
+            val intent = Intent().apply {
+                when {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                        // Android 8.0 and above - open app notification settings
+                        action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    }
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP -> {
+                        // Android 5.0 to 7.1 - open app settings
+                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
+                    else -> {
+                        // Older versions
+                        action = Settings.ACTION_APPLICATION_SETTINGS
+                    }
+                }
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            // Fallback: open general app settings
+            try {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(intent)
+            } catch (e2: Exception) {
+                Toast.makeText(context, "Please enable notifications in system settings", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    
+    fun handleTestNotificationClick() {
+        // Check if notifications are enabled at system level
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            Toast.makeText(context, "Opening notification settings...", Toast.LENGTH_SHORT).show()
+            openNotificationSettings()
+            return
+        }
+        
+        // Check if permission is granted (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!permissionsManager.hasNotificationPermission()) {
+                // Request permission
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return
+            }
+        }
+        
+        // Permission is granted, show notification
+        val success = notificationService.showTestNotification()
+        if (success) {
+            Toast.makeText(context, "Test notification sent!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Failed to send notification. Opening settings...", Toast.LENGTH_SHORT).show()
+            openNotificationSettings()
+        }
+    }
     
     Column(
         modifier = Modifier.fillMaxSize()
@@ -251,6 +339,56 @@ fun NotificationSettingsScreen(
                         onCheckedChange = { 
                             goalReminders = it
                         }
+                    )
+                }
+            }
+        }
+        
+        item {
+            // Test Notification
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        handleTestNotificationClick()
+                    },
+                colors = CardDefaults.cardColors(containerColor = HealthTeal.copy(alpha = 0.1f))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.NotificationsActive,
+                        contentDescription = "Test Notification",
+                        tint = HealthTeal,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Test Notification",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Tap to send a test notification",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = "Test Notification",
+                        tint = HealthTeal,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }

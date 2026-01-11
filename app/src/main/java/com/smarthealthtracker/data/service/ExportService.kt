@@ -22,16 +22,16 @@ import com.itextpdf.layout.properties.TextAlignment
 import com.itextpdf.layout.properties.UnitValue
 
 class ExportService(private val context: Context) {
-
+    
     suspend fun exportToCSV(healthData: List<HealthData>): String = withContext(Dispatchers.IO) {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val fileName = "SmartHealthTracker_Data_$timestamp.csv"
         val file = getDownloadsFile(fileName)
-
+        
         FileWriter(file).use { writer ->
             // Write CSV header
             writer.append("Date,Steps,Distance (m),Calories Burned,Water Intake (ml),Sleep Hours,Heart Rate,Health Score,Created At,Updated At\n")
-
+            
             // Write data rows
             healthData.forEach { data ->
                 writer.append("${data.date},")
@@ -46,28 +46,28 @@ class ExportService(private val context: Context) {
                 writer.append("${data.updatedAt}\n")
             }
         }
-
+        
         // Return user-friendly path
         "Downloads/SmartHealthTracker_Data_$timestamp.csv"
     }
-
+    
     suspend fun exportToPDF(healthData: List<HealthData>): String = withContext(Dispatchers.IO) {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val fileName = "SmartHealthTracker_Report_$timestamp.pdf"
         val file = getDownloadsFile(fileName)
-
+        
         // Create PDF using iText
         FileOutputStream(file).use { outputStream ->
             val pdfWriter = PdfWriter(outputStream)
             val pdfDocument = PdfDocument(pdfWriter)
             val document = Document(pdfDocument)
-
+            
             // Title
             val title = Paragraph("SMART HEALTH TRACKER - HEALTH REPORT")
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(18f)
             document.add(title)
-
+            
             // Report info
             val reportInfo = Paragraph()
                 .add("Generated on: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())}\n")
@@ -76,9 +76,9 @@ class ExportService(private val context: Context) {
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(12f)
             document.add(reportInfo)
-
+            
             document.add(Paragraph("\n"))
-
+            
             if (healthData.isNotEmpty()) {
                 // Summary statistics
                 val totalSteps = healthData.sumOf { it.steps }
@@ -90,49 +90,49 @@ class ExportService(private val context: Context) {
                 val avgHeartRate = if (healthData.any { it.heartRate > 0 }) {
                     healthData.filter { it.heartRate > 0 }.map { it.heartRate }.average()
                 } else 0.0
-
+                
                 val summaryTitle = Paragraph("SUMMARY STATISTICS")
                     .setFontSize(14f)
                     .setBold()
                 document.add(summaryTitle)
-
+                
                 val summaryTable = Table(UnitValue.createPercentArray(floatArrayOf(50f, 50f)))
                     .setWidth(UnitValue.createPercentValue(100f))
-
+                
                 summaryTable.addCell(Cell().add(Paragraph("Total Steps")))
                 summaryTable.addCell(Cell().add(Paragraph(String.format("%,d", totalSteps))))
-
+                
                 summaryTable.addCell(Cell().add(Paragraph("Total Distance")))
                 summaryTable.addCell(Cell().add(Paragraph("${String.format("%.2f", totalDistance / 1000)} km")))
-
+                
                 summaryTable.addCell(Cell().add(Paragraph("Total Calories Burned")))
                 summaryTable.addCell(Cell().add(Paragraph(String.format("%,d", totalCalories))))
-
+                
                 summaryTable.addCell(Cell().add(Paragraph("Total Water Intake")))
                 summaryTable.addCell(Cell().add(Paragraph("${String.format("%,d", totalWater)} ml")))
-
+                
                 summaryTable.addCell(Cell().add(Paragraph("Average Sleep")))
                 summaryTable.addCell(Cell().add(Paragraph("${String.format("%.1f", avgSleep)} hours")))
-
+                
                 summaryTable.addCell(Cell().add(Paragraph("Average Heart Rate")))
                 summaryTable.addCell(Cell().add(Paragraph("${String.format("%.0f", avgHeartRate)} bpm")))
-
+                
                 summaryTable.addCell(Cell().add(Paragraph("Average Health Score")))
                 summaryTable.addCell(Cell().add(Paragraph("${String.format("%.1f", avgHealthScore)}/100")))
-
+                
                 document.add(summaryTable)
                 document.add(Paragraph("\n"))
-
+                
                 // Health insights
                 val insightsTitle = Paragraph("HEALTH INSIGHTS")
                     .setFontSize(14f)
                     .setBold()
                 document.add(insightsTitle)
-
+                
                 val bestDay = healthData.maxByOrNull { it.healthScore }
                 val worstDay = healthData.minByOrNull { it.healthScore }
                 val mostActiveDay = healthData.maxByOrNull { it.steps }
-
+                
                 val insights = Paragraph()
                 bestDay?.let {
                     insights.add("Best Health Day: ${it.date} (Score: ${it.healthScore}/100)\n")
@@ -145,16 +145,16 @@ class ExportService(private val context: Context) {
                 }
                 document.add(insights)
                 document.add(Paragraph("\n"))
-
+                
                 // Detailed data table
                 val dataTitle = Paragraph("DETAILED DAILY DATA")
                     .setFontSize(14f)
                     .setBold()
                 document.add(dataTitle)
-
+                
                 val dataTable = Table(UnitValue.createPercentArray(floatArrayOf(20f, 15f, 15f, 15f, 15f, 20f)))
                     .setWidth(UnitValue.createPercentValue(100f))
-
+                
                 // Table headers
                 dataTable.addHeaderCell(Cell().add(Paragraph("Date")))
                 dataTable.addHeaderCell(Cell().add(Paragraph("Steps")))
@@ -162,7 +162,7 @@ class ExportService(private val context: Context) {
                 dataTable.addHeaderCell(Cell().add(Paragraph("Sleep (h)")))
                 dataTable.addHeaderCell(Cell().add(Paragraph("Health Score")))
                 dataTable.addHeaderCell(Cell().add(Paragraph("Created")))
-
+                
                 // Table data
                 healthData.sortedByDescending { it.date }.forEach { data ->
                     dataTable.addCell(Cell().add(Paragraph(data.date)))
@@ -172,7 +172,7 @@ class ExportService(private val context: Context) {
                     dataTable.addCell(Cell().add(Paragraph(data.healthScore.toString())))
                     dataTable.addCell(Cell().add(Paragraph(data.createdAt.take(10)))) // Just the date part
                 }
-
+                
                 document.add(dataTable)
             } else {
                 val noDataMessage = Paragraph("No health data available for export.\nStart tracking your health to generate reports!")
@@ -180,14 +180,14 @@ class ExportService(private val context: Context) {
                     .setFontSize(12f)
                 document.add(noDataMessage)
             }
-
+            
             document.close()
         }
-
+        
         // Return user-friendly path
         "Downloads/SmartHealthTracker_Report_$timestamp.pdf"
     }
-
+    
     /**
      * Get a file in the Downloads directory with user-friendly access
      */
@@ -202,14 +202,14 @@ class ExportService(private val context: Context) {
             File(downloadsDir, fileName)
         }
     }
-
+    
     /**
      * Get user-friendly export directory path
      */
     fun getExportDirectoryPath(): String {
         return "Downloads"
     }
-
+    
     /**
      * Get available exports from Downloads folder
      */
@@ -219,7 +219,7 @@ class ExportService(private val context: Context) {
             file.name.startsWith("SmartHealthTracker_") && (file.name.endsWith(".csv") || file.name.endsWith(".pdf"))
         }?.toList() ?: emptyList()
     }
-
+    
     /**
      * Delete an export file
      */
@@ -230,7 +230,7 @@ class ExportService(private val context: Context) {
             false
         }
     }
-
+    
     /**
      * Get user-friendly file path for display
      */

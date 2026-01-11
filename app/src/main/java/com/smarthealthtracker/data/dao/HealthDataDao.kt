@@ -4,7 +4,36 @@ import androidx.room.*
 import com.smarthealthtracker.data.model.HealthData
 import kotlinx.coroutines.flow.Flow
 
-
+/**
+ * HEALTH DATA DAO (Data Access Object)
+ * 
+ * This interface defines database operations for the HealthData entity.
+ * It provides type-safe access to health data using Room annotations.
+ * 
+ * KEY FEATURES:
+ * - Type-safe database queries using Room annotations
+ * - Reactive data streams using Flow
+ * - CRUD operations for health data
+ * - Analytics queries for data aggregation
+ * - Thread-safe database operations
+ * 
+ * RESPONSIBILITIES:
+ * - Daily health data CRUD operations
+ * - Date-based queries for analytics
+ * - Data aggregation and statistics
+ * - Bulk operations for data management
+ * 
+ * QUERY TYPES:
+ * - @Query: Custom SQL queries for complex operations
+ * - @Insert: Insert new health data records
+ * - @Update: Update existing health data records
+ * - @Delete: Delete health data records
+ * 
+ * REACTIVE DATA:
+ * - Flow<List<HealthData>>: Provides reactive data streams
+ * - UI automatically updates when data changes
+ * - Efficient memory usage with lazy evaluation
+ */
 @Dao
 interface HealthDataDao {
     
